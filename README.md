@@ -10,7 +10,7 @@
     * [discord.py](https://discordpy.readthedocs.io/ja/latest) 1.3.3
 
 # 下準備(Setup)
-* config.json, city_data.jsonは予め作成しておく
+* config.jsonは予め作成しておく
 ```bash
 git clone https://github.com/Jave-Strife/discord-weather-bot.git
 cd discord-weather-bot
@@ -22,4 +22,4 @@ python main.py
 ```
 
 # 使用WebAPI(Using WebAPI)
-* [OpenWeatherMap](https://openweathermap.org)  
+* [OpenWeatherMap](https://openweathermap.org)

@@ -7,27 +7,24 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from datetime import datetime
 from io import BytesIO
-from pprint import pprint
 from discord import Webhook, RequestsWebhookAdapter, Embed, File
-from bs4 import BeautifulSoup
 
 class Weather():
 
-    def __init__( self, owm_key, webhook_id, webhook_token, location, command ):
+    def __init__( self, owm_key, webhook_id, webhook_token, location, latitude, longitude, command ):
         self.owm_key = owm_key
         self.webhook_id = webhook_id
         self.webhook_token = webhook_token
         self.location = location
+        self.latitude = latitude
+        self.longitude = longitude
         self.command = command
 
 
     def post( self ):
 
-        # 緯度・経度を取得
-        latlon = self.__get_latlon()
-
-        # 緯度・経度を基に天気情報を取得
-        weather_data = self.__get_weather_data( latlon[0], latlon[1] )[self.command]
+        # 地名データ内の緯度・経度を基に天気情報を取得
+        weather_data = self.__get_weather_data( self.latitude, self.longitude )[self.command]
 
         # グラフ用の配列を生成
         arr_graph = []
@@ -220,43 +217,6 @@ class Weather():
             webhook.send( embed = embed, file = file )
 
 
-    # 入力された地名から緯度・経度を取得する関数
-    def __get_latlon( self ):
-
-        # 基となるURL
-        base_url = "http://www.geocoding.jp/api/"
-        params = {"q": self.location }
-
-        # URLにクエリをセット
-        url = urllib.request.Request("{0}?{1}".format( base_url, urllib.parse.urlencode( params ) ) )
-
-        # URLを開く
-        try:
-            req = urllib.request.urlopen( url )
-            html = req.read()
-            #print( req.geturl() )
-
-            # 取得したURL内を検索
-            soup = BeautifulSoup( html.decode("utf-8"), "html.parser")
-
-            # 存在しない地名だった場合
-            if not soup.find("lat"):
-
-                # ( 0, 0 )を返す
-                return "0", "0"
-
-            # URL内から緯度・経度の要素を抽出
-            lat = str( soup.find("lat").string )
-            lon = str( soup.find("lng").string )
-
-            #print( html.decode("utf-8") )
-            return lat, lon
-
-        except urllib.error.HTTPError as e:
-
-            return "0", "0"
-
-
     # 緯度・経度から天気情報(JSON)を取得する関数
     def __get_weather_data( self, lat, lon ):
 
@@ -410,14 +370,14 @@ class Weather():
         plt.close( fig )
 
         # ファイル名を出力
-        send_file = "{0}.{1}".format( self.__log_file_name(), ext )
+        send_file = "{0}.{1}".format( self.__send_file_name(), ext )
         #print( send_file )
 
         return img, send_file
 
 
     # ログファイル名を生成する関数
-    def __log_file_name( self ):
+    def __send_file_name( self ):
 
-        random_string = "".join([random.choice( string.ascii_letters + string.digits ) for i in range( 12 )])
+        random_string = "".join( [random.choice( string.ascii_letters + string.digits ) for i in range( 12 )] )
         return datetime.now().strftime("%Y%m%d_%H%M%S_{0}_{1}".format( self.command, random_string ) )
